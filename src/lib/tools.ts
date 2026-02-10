@@ -598,6 +598,25 @@ ${execution.result || "(No output produced)"}
             try {
               const apiKey = process.env.VALYU_API_KEY;
               if (!apiKey) throw new Error('VALYU_API_KEY required');
+
+              // Full source list: API returns what the plan allows. Upgraded plans get SEC, insider, market movers, etc.
+              const includedSources = [
+                'valyu/valyu-stocks',
+                'valyu/valyu-sec-filings',
+                'valyu/valyu-earnings-US',
+                'valyu/valyu-balance-sheet-US',
+                'valyu/valyu-income-statement-US',
+                'valyu/valyu-cash-flow-US',
+                'valyu/valyu-dividends-US',
+                'valyu/valyu-insider-transactions-US',
+                'valyu/valyu-market-movers-US',
+                'valyu/valyu-crypto',
+                'valyu/valyu-forex',
+                'valyu/valyu-bls',
+                'valyu/valyu-fred',
+                'valyu/valyu-world-bank',
+              ];
+
               const res = await fetch('https://api.valyu.ai/v1/deepsearch', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey },
@@ -605,33 +624,47 @@ ${execution.result || "(No output produced)"}
                   query,
                   search_type: 'proprietary',
                   max_num_results: 5,
-                  included_sources: [
-                    'valyu/valyu-stocks',
-                    'valyu/valyu-sec-filings',
-                    'valyu/valyu-earnings-US',
-                    'valyu/valyu-balance-sheet-US',
-                    'valyu/valyu-income-statement-US',
-                    'valyu/valyu-cash-flow-US',
-                    'valyu/valyu-dividends-US',
-                    'valyu/valyu-insider-transactions-US',
-                    'valyu/valyu-market-movers-US',
-                    'valyu/valyu-crypto',
-                    'valyu/valyu-forex',
-                    'valyu/valyu-bls',
-                    'valyu/valyu-fred',
-                    'valyu/valyu-world-bank',
-                  ],
+                  included_sources: includedSources,
                 }),
               });
-              if (!res.ok) {
+
+              if (res.ok) {
+                const response = await res.json();
+                if (response?.error) {
+                  console.warn('[financeSearch] Partial warning:', response.error);
+                }
+                console.log('[financeSearch] Proprietary:', { results: response?.results?.length || 0, elapsed: `${Date.now() - startTime}ms` });
+                await trackValyuCall('financeSearch', query, response, false);
+                if (response?.results?.length) {
+                  return response;
+                }
+              } else {
                 const errBody = await res.text().catch(() => '');
-                console.error('[financeSearch] API Error:', { status: res.status, body: errBody });
-                throw new Error(`API error: ${res.status} - ${errBody}`);
+                console.warn('[financeSearch] Proprietary failed:', { status: res.status, body: errBody });
               }
-              const response = await res.json();
-              console.log('[financeSearch] Success:', { results: response?.results?.length || 0, elapsed: `${Date.now() - startTime}ms` });
-              await trackValyuCall('financeSearch', query, response, false);
-              return response?.results?.length ? response : `🔍 No financial data found for "${query}".`;
+
+              // Fallback: use web search when proprietary data sources return no results
+              console.log('[financeSearch] No proprietary results, trying web search fallback');
+              const webRes = await fetch('https://api.valyu.ai/v1/deepsearch', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey },
+                body: JSON.stringify({
+                  query: `financial data ${query}`,
+                  search_type: 'all',
+                  max_num_results: 5,
+                }),
+              });
+
+              if (webRes.ok) {
+                const webResponse = await webRes.json();
+                console.log('[financeSearch] Web fallback:', { results: webResponse?.results?.length || 0, elapsed: `${Date.now() - startTime}ms` });
+                await trackValyuCall('financeSearch', query, webResponse, false);
+                if (webResponse?.results?.length) {
+                  return webResponse;
+                }
+              }
+
+              return `🔍 No financial data found for "${query}". Try rephrasing or using webSearch for general financial news.`;
             } catch (error) {
               return formatSearchError(error, 'financeSearch');
             }
@@ -690,20 +723,52 @@ ${execution.result || "(No output produced)"}
             try {
               const apiKey = process.env.VALYU_API_KEY;
               if (!apiKey) throw new Error('VALYU_API_KEY required');
-              const res = await fetch('https://api.valyu.ai/v1/deepsearch', {
+
+              // Try SEC filings proprietary source first
+              try {
+                const res = await fetch('https://api.valyu.ai/v1/deepsearch', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey },
+                  body: JSON.stringify({ query, search_type: 'proprietary', max_num_results: 5, included_sources: ['valyu/valyu-sec-filings'] }),
+                });
+                if (res.ok) {
+                  const response = await res.json();
+                  if (response?.results?.length) {
+                    console.log('[secSearch] Success:', { results: response.results.length, elapsed: `${Date.now() - startTime}ms` });
+                    await trackValyuCall('secSearch', query, response, false);
+                    return response;
+                  }
+                  console.warn('[secSearch] SEC source returned 0 results');
+                } else {
+                  const errBody = await res.text().catch(() => '');
+                  console.warn('[secSearch] SEC source failed:', { status: res.status, body: errBody });
+                }
+              } catch (secError) {
+                console.warn('[secSearch] SEC source error:', secError instanceof Error ? secError.message : secError);
+              }
+
+              // Fallback: use web search targeting SEC filing sites
+              console.log('[secSearch] Falling back to web search for SEC data');
+              const webRes = await fetch('https://api.valyu.ai/v1/deepsearch', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey },
-                body: JSON.stringify({ query, search_type: 'proprietary', max_num_results: 5, included_sources: ['valyu/valyu-sec-filings'] }),
+                body: JSON.stringify({
+                  query: `SEC filing ${query} site:sec.gov OR 10-K OR 10-Q OR 8-K`,
+                  search_type: 'all',
+                  max_num_results: 5,
+                }),
               });
-              if (!res.ok) {
-                const errBody = await res.text().catch(() => '');
-                console.error('[secSearch] API Error:', { status: res.status, body: errBody });
-                throw new Error(`API error: ${res.status} - ${errBody}`);
+
+              if (webRes.ok) {
+                const webResponse = await webRes.json();
+                console.log('[secSearch] Web fallback:', { results: webResponse?.results?.length || 0, elapsed: `${Date.now() - startTime}ms` });
+                await trackValyuCall('secSearch', query, webResponse, false);
+                if (webResponse?.results?.length) {
+                  return webResponse;
+                }
               }
-              const response = await res.json();
-              console.log('[secSearch] Success:', { results: response?.results?.length || 0, elapsed: `${Date.now() - startTime}ms` });
-              await trackValyuCall('secSearch', query, response, false);
-              return response?.results?.length ? response : `🔍 No SEC filings found for "${query}".`;
+
+              return `🔍 SEC filings search is currently experiencing issues. No results found for "${query}". Try webSearch or financeSearch as alternatives.`;
             } catch (error) {
               return formatSearchError(error, 'secSearch');
             }
@@ -795,20 +860,47 @@ ${execution.result || "(No output produced)"}
             try {
               const apiKey = process.env.VALYU_API_KEY;
               if (!apiKey) throw new Error('VALYU_API_KEY required');
+
+              // Try Wiley academic sources first
               const res = await fetch('https://api.valyu.ai/v1/deepsearch', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey },
                 body: JSON.stringify({ query, search_type: 'proprietary', max_num_results: 5, included_sources: ['wiley/wiley-finance-papers', 'wiley/wiley-finance-books'] }),
               });
-              if (!res.ok) {
-                const errBody = await res.text().catch(() => '');
-                console.error('[financeJournalSearch] API Error:', { status: res.status, body: errBody });
-                throw new Error(`API error: ${res.status}`);
+
+              if (res.ok) {
+                const response = await res.json();
+                console.log('[financeJournalSearch] Success:', { results: response?.results?.length || 0, elapsed: `${Date.now() - startTime}ms` });
+                await trackValyuCall('financeJournalSearch', query, response, false);
+                if (response?.results?.length) {
+                  return response;
+                }
+              } else {
+                console.warn('[financeJournalSearch] Proprietary failed:', res.status);
               }
-              const response = await res.json();
-              console.log('[financeJournalSearch] Success:', { results: response?.results?.length || 0, elapsed: `${Date.now() - startTime}ms` });
-              await trackValyuCall('financeJournalSearch', query, response, false);
-              return response?.results?.length ? response : `🔍 No finance journal results found for "${query}".`;
+
+              // Fallback: web search for academic finance content
+              console.log('[financeJournalSearch] Falling back to web search');
+              const webRes = await fetch('https://api.valyu.ai/v1/deepsearch', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey },
+                body: JSON.stringify({
+                  query: `academic finance research ${query} site:ssrn.com OR site:nber.org OR site:arxiv.org`,
+                  search_type: 'all',
+                  max_num_results: 5,
+                }),
+              });
+
+              if (webRes.ok) {
+                const webResponse = await webRes.json();
+                console.log('[financeJournalSearch] Web fallback:', { results: webResponse?.results?.length || 0, elapsed: `${Date.now() - startTime}ms` });
+                await trackValyuCall('financeJournalSearch', query, webResponse, false);
+                if (webResponse?.results?.length) {
+                  return webResponse;
+                }
+              }
+
+              return `🔍 No finance journal results found for "${query}".`;
             } catch (error) {
               return formatSearchError(error, 'financeJournalSearch');
             }
@@ -847,20 +939,47 @@ ${execution.result || "(No output produced)"}
             try {
               const apiKey = process.env.VALYU_API_KEY;
               if (!apiKey) throw new Error('VALYU_API_KEY required');
+
+              // Try Polymarket proprietary source first
               const res = await fetch('https://api.valyu.ai/v1/deepsearch', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey },
                 body: JSON.stringify({ query, search_type: 'proprietary', max_num_results: 5, included_sources: ['valyu/valyu-polymarket'] }),
               });
-              if (!res.ok) {
-                const errBody = await res.text().catch(() => '');
-                console.error('[polymarketSearch] API Error:', { status: res.status, body: errBody });
-                throw new Error(`API error: ${res.status}`);
+
+              if (res.ok) {
+                const response = await res.json();
+                console.log('[polymarketSearch] Success:', { results: response?.results?.length || 0, elapsed: `${Date.now() - startTime}ms` });
+                await trackValyuCall('polymarketSearch', query, response, false);
+                if (response?.results?.length) {
+                  return response;
+                }
+              } else {
+                console.warn('[polymarketSearch] Proprietary failed:', res.status);
               }
-              const response = await res.json();
-              console.log('[polymarketSearch] Success:', { results: response?.results?.length || 0, elapsed: `${Date.now() - startTime}ms` });
-              await trackValyuCall('polymarketSearch', query, response, false);
-              return response?.results?.length ? response : `🔍 No Polymarket data found for "${query}".`;
+
+              // Fallback: web search for prediction market data
+              console.log('[polymarketSearch] Falling back to web search');
+              const webRes = await fetch('https://api.valyu.ai/v1/deepsearch', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey },
+                body: JSON.stringify({
+                  query: `prediction market ${query} site:polymarket.com OR site:kalshi.com`,
+                  search_type: 'all',
+                  max_num_results: 5,
+                }),
+              });
+
+              if (webRes.ok) {
+                const webResponse = await webRes.json();
+                console.log('[polymarketSearch] Web fallback:', { results: webResponse?.results?.length || 0, elapsed: `${Date.now() - startTime}ms` });
+                await trackValyuCall('polymarketSearch', query, webResponse, false);
+                if (webResponse?.results?.length) {
+                  return webResponse;
+                }
+              }
+
+              return `🔍 No Polymarket data found for "${query}".`;
             } catch (error) {
               return formatSearchError(error, 'polymarketSearch');
             }
