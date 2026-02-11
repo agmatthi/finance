@@ -76,6 +76,128 @@ interface SecFilingEntry {
 
 const CACHE_ROOT = path.join(process.cwd(), ".local-data", "sec-filings");
 const TICKER_CACHE = path.join(CACHE_ROOT, "company-tickers.json");
+
+/**
+ * Well-known institutional 13F filers whose names don't appear in
+ * company_tickers.json (because they're not exchange-listed) or whose
+ * name collides with another EDGAR entity. Each entry maps one or more
+ * search-friendly lowercase aliases → verified CIK.
+ *
+ * This map is checked first by searchCompanyByName() when the caller
+ * requests a 13F-HR filing, which eliminates the ambiguity that the
+ * EDGAR company-search CGI cannot resolve on its own.
+ */
+const KNOWN_13F_FILERS: Record<string, { cik: string; name: string }> = {
+  // Vanguard Group — CIK 102909 files 13F; CIK 735286 is transfer-agent entity
+  "vanguard": { cik: "102909", name: "VANGUARD GROUP INC" },
+  "vanguard group": { cik: "102909", name: "VANGUARD GROUP INC" },
+  "vanguard group inc": { cik: "102909", name: "VANGUARD GROUP INC" },
+  "the vanguard group": { cik: "102909", name: "VANGUARD GROUP INC" },
+
+  // BlackRock
+  "blackrock": { cik: "1364742", name: "BlackRock Finance, Inc." },
+  "blackrock inc": { cik: "1364742", name: "BlackRock Finance, Inc." },
+  "blackrock finance": { cik: "1364742", name: "BlackRock Finance, Inc." },
+
+  // State Street
+  "state street": { cik: "93751", name: "STATE STREET CORP" },
+  "state street corp": { cik: "93751", name: "STATE STREET CORP" },
+  "state street corporation": { cik: "93751", name: "STATE STREET CORP" },
+
+  // Fidelity (FMR)
+  "fidelity": { cik: "315066", name: "FMR LLC" },
+  "fmr": { cik: "315066", name: "FMR LLC" },
+  "fmr llc": { cik: "315066", name: "FMR LLC" },
+  "fidelity management": { cik: "315066", name: "FMR LLC" },
+  "fidelity investments": { cik: "315066", name: "FMR LLC" },
+
+  // Berkshire Hathaway
+  "berkshire hathaway": { cik: "1067983", name: "BERKSHIRE HATHAWAY INC" },
+  "berkshire hathaway inc": { cik: "1067983", name: "BERKSHIRE HATHAWAY INC" },
+  "berkshire": { cik: "1067983", name: "BERKSHIRE HATHAWAY INC" },
+
+  // Citadel
+  "citadel": { cik: "1423053", name: "CITADEL ADVISORS LLC" },
+  "citadel advisors": { cik: "1423053", name: "CITADEL ADVISORS LLC" },
+  "citadel advisors llc": { cik: "1423053", name: "CITADEL ADVISORS LLC" },
+
+  // Bridgewater
+  "bridgewater": { cik: "1350694", name: "Bridgewater Associates, LP" },
+  "bridgewater associates": { cik: "1350694", name: "Bridgewater Associates, LP" },
+
+  // Two Sigma
+  "two sigma": { cik: "1179392", name: "TWO SIGMA INVESTMENTS, LP" },
+  "two sigma investments": { cik: "1179392", name: "TWO SIGMA INVESTMENTS, LP" },
+
+  // Renaissance Technologies
+  "renaissance": { cik: "1037389", name: "RENAISSANCE TECHNOLOGIES LLC" },
+  "renaissance technologies": { cik: "1037389", name: "RENAISSANCE TECHNOLOGIES LLC" },
+  "renaissance tech": { cik: "1037389", name: "RENAISSANCE TECHNOLOGIES LLC" },
+  "rentec": { cik: "1037389", name: "RENAISSANCE TECHNOLOGIES LLC" },
+
+  // D.E. Shaw
+  "de shaw": { cik: "1009207", name: "D. E. Shaw & Co., Inc." },
+  "d.e. shaw": { cik: "1009207", name: "D. E. Shaw & Co., Inc." },
+  "d e shaw": { cik: "1009207", name: "D. E. Shaw & Co., Inc." },
+
+  // Millennium Management
+  "millennium": { cik: "1273087", name: "MILLENNIUM MANAGEMENT LLC" },
+  "millennium management": { cik: "1273087", name: "MILLENNIUM MANAGEMENT LLC" },
+
+  // Point72 (Steve Cohen)
+  "point72": { cik: "1603466", name: "Point72 Asset Management, L.P." },
+  "point72 asset management": { cik: "1603466", name: "Point72 Asset Management, L.P." },
+
+  // AQR Capital
+  "aqr": { cik: "1167557", name: "AQR CAPITAL MANAGEMENT LLC" },
+  "aqr capital": { cik: "1167557", name: "AQR CAPITAL MANAGEMENT LLC" },
+  "aqr capital management": { cik: "1167557", name: "AQR CAPITAL MANAGEMENT LLC" },
+
+  // Tiger Global
+  "tiger global": { cik: "1167483", name: "TIGER GLOBAL MANAGEMENT LLC" },
+  "tiger global management": { cik: "1167483", name: "TIGER GLOBAL MANAGEMENT LLC" },
+
+  // Baupost Group
+  "baupost": { cik: "1061768", name: "BAUPOST GROUP LLC/MA" },
+  "baupost group": { cik: "1061768", name: "BAUPOST GROUP LLC/MA" },
+
+  // Third Point (Dan Loeb)
+  "third point": { cik: "1040273", name: "Third Point LLC" },
+  "third point llc": { cik: "1040273", name: "Third Point LLC" },
+
+  // Lone Pine Capital
+  "lone pine": { cik: "1061165", name: "LONE PINE CAPITAL LLC" },
+  "lone pine capital": { cik: "1061165", name: "LONE PINE CAPITAL LLC" },
+
+  // Pershing Square (Bill Ackman)
+  "pershing square": { cik: "1336528", name: "Pershing Square Capital Management, L.P." },
+  "pershing square capital": { cik: "1336528", name: "Pershing Square Capital Management, L.P." },
+
+  // Soros Fund Management
+  "soros": { cik: "1029160", name: "SOROS FUND MANAGEMENT LLC" },
+  "soros fund management": { cik: "1029160", name: "SOROS FUND MANAGEMENT LLC" },
+
+  // Coatue Management
+  "coatue": { cik: "1135730", name: "COATUE MANAGEMENT LLC" },
+  "coatue management": { cik: "1135730", name: "COATUE MANAGEMENT LLC" },
+
+  // Viking Global
+  "viking global": { cik: "1103804", name: "VIKING GLOBAL INVESTORS LP" },
+  "viking global investors": { cik: "1103804", name: "VIKING GLOBAL INVESTORS LP" },
+
+  // Elliott Investment Management
+  "elliott": { cik: "1791786", name: "Elliott Investment Management L.P." },
+  "elliott management": { cik: "1791786", name: "Elliott Investment Management L.P." },
+  "elliott investment management": { cik: "1791786", name: "Elliott Investment Management L.P." },
+
+  // Greenlight Capital (David Einhorn)
+  "greenlight": { cik: "1079114", name: "GREENLIGHT CAPITAL INC" },
+  "greenlight capital": { cik: "1079114", name: "GREENLIGHT CAPITAL INC" },
+
+  // Paulson & Co
+  "paulson": { cik: "1035674", name: "PAULSON & CO. INC." },
+  "paulson & co": { cik: "1035674", name: "PAULSON & CO. INC." },
+};
 const parser = new XMLParser({
   ignoreAttributes: false,
   attributeNamePrefix: "",
@@ -205,10 +327,17 @@ async function loadTickerDirectory(): Promise<
 }
 
 /**
- * Search for a company by name. First checks the loaded ticker directory
- * (covers publicly-traded entities like BlackRock, State Street), then falls
- * back to EDGAR full-text search (EFTS) to find entities that may not be in
- * the ticker file (e.g. privately-held 13F filers like Vanguard Group).
+ * Search for a company by name using a multi-strategy approach:
+ *
+ * 1. **Known 13F filer map** – instant lookup for major institutional investors
+ *    (Vanguard, BlackRock, Citadel, Bridgewater, etc.) whose names collide
+ *    with other EDGAR entities or who are not in the public-company ticker file.
+ *
+ * 2. **Ticker directory** – searches company_tickers.json by title. Covers
+ *    publicly traded companies (BlackRock Inc → BLK, State Street → STT).
+ *
+ * 3. **EDGAR CGI company search** – queries the SEC browse-edgar endpoint
+ *    (Atom XML) as a final fallback for entities not covered above.
  */
 export async function searchCompanyByName(
   name: string,
@@ -217,7 +346,36 @@ export async function searchCompanyByName(
   const searchTerm = name.toLowerCase().trim();
   if (!searchTerm || searchTerm.length < 2) return null;
 
-  // Step 1: Search through loaded ticker directory by company title
+  // ── Step 1: Check curated 13F filer map (instant, no network) ──────────
+  if (formType === "13F-HR" || !formType) {
+    const known = KNOWN_13F_FILERS[searchTerm];
+    if (known) {
+      console.log("[SEC] Resolved via known-13F map:", {
+        search: name,
+        cik: known.cik,
+        name: known.name,
+      });
+      return { cik: known.cik, companyName: known.name };
+    }
+    // Also try progressively shorter prefixes for partial matches
+    // e.g. "vanguard group inc latest" → try "vanguard group inc", "vanguard group", "vanguard"
+    const words = searchTerm.split(/\s+/);
+    for (let len = words.length; len >= 1; len--) {
+      const prefix = words.slice(0, len).join(" ");
+      const knownPrefix = KNOWN_13F_FILERS[prefix];
+      if (knownPrefix) {
+        console.log("[SEC] Resolved via known-13F map (prefix):", {
+          search: name,
+          matchedPrefix: prefix,
+          cik: knownPrefix.cik,
+          name: knownPrefix.name,
+        });
+        return { cik: knownPrefix.cik, companyName: knownPrefix.name };
+      }
+    }
+  }
+
+  // ── Step 2: Search ticker directory by company title ───────────────────
   try {
     const directory = await loadTickerDirectory();
     let bestMatch: CompanyTickerRecord | null = null;
@@ -225,18 +383,15 @@ export async function searchCompanyByName(
 
     for (const entry of Object.values(directory)) {
       const title = entry.title.toLowerCase();
-      // Exact match — return immediately
       if (title === searchTerm) {
         bestMatch = entry;
         bestScore = Infinity;
         break;
       }
-      // Title contains search term (e.g. "blackrock" matches "BlackRock Inc.")
       if (title.includes(searchTerm) && searchTerm.length > bestScore) {
         bestMatch = entry;
         bestScore = searchTerm.length;
       }
-      // Search term contains title (e.g. "blackrock inc" matches "BlackRock")
       if (searchTerm.includes(title) && title.length > bestScore) {
         bestMatch = entry;
         bestScore = title.length;
@@ -259,79 +414,65 @@ export async function searchCompanyByName(
     console.warn("[SEC] Ticker directory name search failed:", error);
   }
 
-  // Step 2: Use EDGAR full-text search (EFTS) to find entity by name.
-  // This handles entities not in company_tickers.json (e.g. private 13F filers).
+  // ── Step 3: EDGAR CGI company search (Atom XML) ───────────────────────
+  // The browse-edgar CGI returns Atom XML. When it matches exactly one
+  // company it auto-redirects to that company's filing list and includes
+  // a <company-info> block with the CIK. We parse that CIK and validate
+  // that the entity actually files the desired form type.
   try {
-    const formFilter = formType
-      ? `&forms=${encodeURIComponent(formType)}`
-      : "";
-    const url = `https://efts.sec.gov/LATEST/search-index?q=%22${encodeURIComponent(
-      name
-    )}%22${formFilter}`;
-    console.log("[SEC] Searching EFTS for company name:", url);
+    const typeFilter = formType ? `&type=${encodeURIComponent(formType)}` : "";
+    const url =
+      `https://www.sec.gov/cgi-bin/browse-edgar?company=${encodeURIComponent(
+        name
+      )}&CIK=&dateb=&owner=include&count=10&search_text=&action=getcompany&output=atom` +
+      typeFilter;
+    console.log("[SEC] CGI company search:", url);
 
-    const res = await secFetch(url);
-    const data = await res.json();
+    const res = await secFetch(url, {
+      headers: { Accept: "application/atom+xml" },
+    });
+    const xml = await res.text();
 
-    const hits = data?.hits?.hits;
-    if (Array.isArray(hits) && hits.length > 0) {
-      const source = hits[0]._source || hits[0] || {};
+    // Extract CIK from <company-info><cik>...</cik>
+    const cikMatch = xml.match(/<cik>0*(\d+)<\/cik>/);
+    const nameMatch = xml.match(
+      /<conformed-name>(.*?)<\/conformed-name>/
+    );
 
-      // Method 1: Some EFTS responses include "COMPANY (CIK 0000102909)" in display fields
-      const nameFields = [
-        source.entity_name_agg,
-        source.display_names?.[0],
-        source.entity_name,
-      ]
-        .filter(Boolean)
-        .join(" ");
+    if (cikMatch) {
+      const cgiCik = cikMatch[1];
+      const cgiName = nameMatch?.[1] || name;
 
-      const cikFromField = nameFields.match(/CIK\s*[:#]?\s*0*(\d{1,10})/i);
-      if (cikFromField) {
-        console.log("[SEC] EFTS found CIK from entity field:", cikFromField[1]);
-        return {
-          cik: cikFromField[1],
-          companyName: source.entity_name || name,
-        };
-      }
-
-      // Method 2: Extract CIK from accession number (format: 0000102909-24-012345)
-      const accession =
-        hits[0]._id || source.accession_no || source.accession_number || "";
-      if (typeof accession === "string") {
-        const accessionMatch = accession.match(/^0*(\d{1,10})-\d{2}-\d+/);
-        if (accessionMatch) {
-          console.log(
-            "[SEC] EFTS found CIK from accession number:",
-            accessionMatch[1]
+      // Validate: check if this CIK actually has the desired filing type
+      if (formType) {
+        try {
+          const subs = await fetchCompanySubmissions(cgiCik);
+          const forms: string[] = subs?.filings?.recent?.form || [];
+          const hasForm = forms.some((f: string) => f.startsWith(formType));
+          if (hasForm) {
+            console.log("[SEC] CGI resolved + validated:", {
+              cik: cgiCik,
+              name: cgiName,
+              formType,
+            });
+            return { cik: cgiCik, companyName: cgiName };
+          }
+          console.warn(
+            `[SEC] CGI CIK ${cgiCik} (${cgiName}) does not file ${formType}`
           );
-          return {
-            cik: accessionMatch[1],
-            companyName: source.entity_name || name,
-          };
+        } catch {
+          // Validation failed, still return the CIK as best-effort
+          console.warn("[SEC] CGI CIK validation fetch failed, using as-is");
+          return { cik: cgiCik, companyName: cgiName };
         }
-      }
-
-      // Method 3: Direct CIK field
-      const directCik = source.entity_id || source.cik || source.entity_cik;
-      if (directCik) {
-        const cleaned = String(directCik)
-          .replace(/\D/g, "")
-          .replace(/^0+/, "");
-        if (cleaned) {
-          console.log("[SEC] EFTS found CIK from direct field:", cleaned);
-          return {
-            cik: cleaned,
-            companyName: source.entity_name || name,
-          };
-        }
+      } else {
+        console.log("[SEC] CGI resolved:", { cik: cgiCik, name: cgiName });
+        return { cik: cgiCik, companyName: cgiName };
       }
     }
-
-    console.warn("[SEC] EFTS search returned no usable results for:", name);
   } catch (error) {
     console.warn(
-      "[SEC] EFTS company search failed:",
+      "[SEC] CGI company search failed:",
       error instanceof Error ? error.message : error
     );
   }
@@ -557,8 +698,18 @@ export async function fetchSecFilingSummary(
   const filing = selectFiling(submissions, formType, filingDate, filingYear);
 
   if (!filing) {
+    const identifier = [
+      company.companyName,
+      company.ticker ? `ticker ${company.ticker}` : null,
+      `CIK ${company.cik}`,
+    ]
+      .filter(Boolean)
+      .join(", ");
+    const yearNote = filingYear ? ` for year ${filingYear}` : "";
     throw new Error(
-      `No ${formType} filing found for ${company.ticker || company.cik}`
+      `No ${formType} filing found for ${identifier}${yearNote}. ` +
+        `This entity (CIK ${company.cik}) may not file ${formType} forms. ` +
+        `Do NOT retry with the same entity — try a different company name, ticker, or CIK.`
     );
   }
 
@@ -607,9 +758,32 @@ export async function fetchSecFilingSummary(
       const indexJson = await indexRes.json();
       const items: Array<{ name: string }> =
         indexJson?.directory?.item || [];
-      const infoItem = items.find((item) =>
-        /infotable|informationtable/i.test(item.name)
-      );
+      // Try multiple naming patterns:
+      // 1. Standard: infotable.xml, form13fInfoTable.xml
+      // 2. Vanguard-style: 13F_*.xml
+      // 3. Fallback: largest non-primary XML file (handles generic names like 46994.xml)
+      const infoItem =
+        items.find((item) =>
+          /infotable|informationtable/i.test(item.name)
+        ) ||
+        items.find(
+          (item) =>
+            /13f/i.test(item.name) &&
+            item.name.endsWith(".xml") &&
+            item.name !== filing.primaryDocument
+        ) ||
+        items
+          .filter(
+            (item: { name: string; size?: string }) =>
+              item.name.endsWith(".xml") &&
+              item.name !== filing.primaryDocument &&
+              !item.name.includes("-index")
+          )
+          .sort(
+            (a: { name: string; size?: string }, b: { name: string; size?: string }) =>
+              Number(b.size || 0) - Number(a.size || 0)
+          )[0] ||
+        null;
       if (infoItem) {
         informationTableUrl = `${basePath}/${infoItem.name}`;
         const tableRes = await secFetch(informationTableUrl, {

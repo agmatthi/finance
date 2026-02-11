@@ -861,7 +861,7 @@ ${execution.result || "(No output produced)"}
 
                 // Extract ticker from query: match 1-5 uppercase letters that are NOT common non-ticker words
                 // Filter out form-type fragments like "HR", "K", "Q" and common words like "SEC", "OR", "AND"
-                const nonTickerWords = new Set(['HR', 'K', 'Q', 'SEC', 'OR', 'AND', 'THE', 'FOR', 'INC', 'CO', 'LTD', 'LLC', 'CORP', 'GROUP', 'FUND']);
+                const nonTickerWords = new Set(['HR', 'K', 'Q', 'SEC', 'OR', 'AND', 'THE', 'FOR', 'INC', 'CO', 'LTD', 'LLC', 'CORP', 'GROUP', 'FUND', 'CIK', 'LP', 'LLP', 'NA', 'OF', 'GET', 'ALL', 'TOP', 'NEW', 'OLD']);
                 const allUpperWords = query.match(/\b([A-Z]{1,5})\b/g) || [];
                 const candidateTickers = allUpperWords.filter(w => !nonTickerWords.has(w));
                 const ticker = candidateTickers.length > 0 ? candidateTickers[0] : null;
