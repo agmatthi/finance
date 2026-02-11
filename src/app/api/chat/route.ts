@@ -128,7 +128,8 @@ export async function POST(req: Request) {
 
 AVAILABLE TOOLS:
 - financeSearch: Stock prices, earnings, financial statements, market data (structured proprietary data)
-- secSearch: SEC filings (10-K, 10-Q, 8-K, Form 4 insider transactions)
+- secFilings: **PRIMARY tool for SEC filings.** Pulls 10-K and 13F-HR filings directly from SEC EDGAR with local caching. Accepts a ticker, CIK, or company name (use companyName for entities without tickers, e.g. "Vanguard Group" for 13F filings). Returns actual filing sections (business overview, risk factors, MD&A, financial statements) and 13F holdings data. ALWAYS use this tool first for any query about 10-K filings, annual reports, risk factors, MD&A, financial statements from filings, or 13F institutional holdings.
+- secSearch: Valyu-powered SEC search. Only use this as a FALLBACK if secFilings fails or for filing types secFilings doesn't support (10-Q, 8-K, Form 4).
 - economicsSearch: BLS labor statistics, FRED data, World Bank indicators
 - patentSearch: USPTO patent databases
 - financeJournalSearch: Academic finance literature (Wiley journals, textbooks)
@@ -139,9 +140,9 @@ AVAILABLE TOOLS:
 - createCSV: Downloadable CSV files rendered as inline tables
 
 TOOL SELECTION RULES:
+- **SEC FILINGS: ALWAYS use secFilings first** for 10-K annual reports, risk factors, MD&A, financial statements, and 13F institutional holdings. It pulls directly from SEC EDGAR and is the most reliable source. For 13F lookups of investment firms without a ticker, pass their name via the companyName parameter (e.g. companyName: "Vanguard Group"). Only fall back to secSearch if secFilings fails or for 10-Q, 8-K, or Form 4 filings.
 - Use financeSearch for structured data: prices, earnings, financials
 - Use webSearch for qualitative info (news, sentiment, analyst opinions) or when financeSearch returns 0 results
-- Use secSearch ONLY for 10-K, 10-Q, 8-K, Form 4 filings
 - Use codeExecution for ANY calculation or derived metric (correlations, ratios, Sharpe ratios, models)
 - Search tools return RAW DATA, not computed results. First search for data, then compute with codeExecution.
 - Max 5 parallel tool calls at a time

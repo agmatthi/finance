@@ -42,6 +42,7 @@ Finance makes all this data accessible through natural language:
 - **Insider Trading** - Track institutional and insider transactions
 - **Academic Research** - Access to arXiv papers and financial research
 - **News & Sentiment** - Real-time news analysis with market impact assessment
+- **Direct EDGAR Access** - Locally cache 10-K sections and 13F holdings for precise SEC-sourced answers
 
 ### Advanced Tool Calling
 
@@ -90,6 +91,9 @@ Self-hosted mode is the recommended way to run Finance. It's easy to set up and 
    DAYTONA_API_KEY=your-daytona-api-key
    DAYTONA_API_URL=https://api.daytona.io  # Optional
    DAYTONA_TARGET=latest  # Optional
+
+   # SEC EDGAR API (Required for secFilings tool)
+   SEC_API_USER_AGENT="FinanceResearchBot/1.0 (email@example.com)"
 
    # Local LLM Configuration (Optional - for unlimited, private queries)
    OLLAMA_BASE_URL=http://localhost:11434   # Default Ollama URL
@@ -254,6 +258,18 @@ rm -rf .local-data/
 ```bash
 cp -r .local-data/ .local-data-backup/
 ```
+
+### EDGAR 10-K + 13F Intelligence
+
+Finance now includes a native `secFilings` tool that calls the official [SEC EDGAR API](https://www.sec.gov/edgar/sec-api-documentation) to fetch 10-K sections (Business, Item 1A, MD&A, Item 8) and 13F holdings tables.
+
+- **One-time caching:** In self-hosted mode, filings are stored under `.local-data/sec-filings` so repeated questions are instant and offline-friendly.
+- **Respectful rate limiting:** Set `SEC_API_USER_AGENT` in your `.env.local` with a descriptive name + contact email to stay compliant with the SEC’s API policy.
+- **10-K sections:** Ask the model to request specific sections via `includeSections` so responses stay focused on MD&A, risk factors, etc.
+- **13F holdings:** The parser converts the XML “information table” into structured JSON sorted by position size; use `limitHoldings` to control how many rows the LLM receives.
+- **Valyu mode fallback:** When running in Valyu mode (serverless), filings are fetched on demand without persisting to disk so you always hit the latest EDGAR data.
+
+> Tip: combine `secFilings` with `codeExecution` to compute concentration metrics, sector tilts, or quarter-over-quarter changes directly from the holdings array.
 
 ## Valyu Mode (Optional)
 

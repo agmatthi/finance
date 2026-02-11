@@ -26,6 +26,9 @@ export function validatePaymentEnvironment(): EnvValidationResult {
     if (!process.env.OPENAI_API_KEY && !process.env.OLLAMA_BASE_URL && !process.env.LMSTUDIO_BASE_URL) {
       warnings.push('No LLM provider configured - set OPENAI_API_KEY, OLLAMA_BASE_URL, or LMSTUDIO_BASE_URL');
     }
+    if (!process.env.SEC_API_USER_AGENT) {
+      warnings.push('SEC_API_USER_AGENT missing - EDGAR requests may be throttled. Set a descriptive user agent with contact email.');
+    }
 
     return {
       valid: true, // Self-hosted mode is always valid
@@ -67,6 +70,9 @@ export function validatePaymentEnvironment(): EnvValidationResult {
   }
   if (!process.env.OPENAI_API_KEY) {
     warnings.push('OPENAI_API_KEY missing - will use Vercel AI Gateway');
+  }
+  if (!process.env.SEC_API_USER_AGENT) {
+    warnings.push('SEC_API_USER_AGENT missing - EDGAR requests may be throttled. Set a descriptive user agent with contact email.');
   }
 
   // Optional fallback API key

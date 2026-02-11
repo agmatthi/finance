@@ -11,6 +11,7 @@ import {
   patentSearch as valyuPatentSearch,
 } from '@valyu/ai-sdk';
 import * as db from '@/lib/db';
+import { fetchSecFilingSummary } from '@/lib/sec-filings';
 
 const isSelfHostedMode = process.env.NEXT_PUBLIC_APP_MODE === 'self-hosted';
 const VALYU_OAUTH_PROXY_URL = process.env.VALYU_OAUTH_PROXY_URL ||
@@ -440,6 +441,109 @@ export const financeTools = {
     },
   }),
 
+  secFilings: tool({
+    description: `PRIMARY tool for SEC filings. Pulls 10-K annual reports and 13F-HR institutional holdings directly from SEC EDGAR with local caching. ALWAYS use this tool for any query about 10-K filings, annual reports, risk factors, MD&A, business overview, financial statements from SEC filings, or 13F institutional holdings. Provide a ticker, CIK, or company name plus the form type. Supports name-based lookup for entities without tickers (e.g. "Vanguard Group", "BlackRock" for 13F filings). For 10-Ks, request specific sections ["business_overview","risk_factors","mdna","liquidity_and_market_risk","financial_statements"] to keep output concise. For 13F-HR filings, set limitHoldings (default 25, max 500) to control how many positions you need.`,
+    inputSchema: z
+      .object({
+        ticker: z
+          .string()
+          .trim()
+          .min(1, "Ticker cannot be empty")
+          .max(10, "Ticker too long")
+          .optional(),
+        cik: z
+          .string()
+          .trim()
+          .regex(/^\d{1,10}$/, "CIK must be numeric and up to 10 digits")
+          .optional(),
+        companyName: z
+          .string()
+          .trim()
+          .min(1, "Company name cannot be empty")
+          .optional()
+          .describe(
+            "Company or entity name to search for (e.g. 'Vanguard Group', 'BlackRock'). Use when ticker/CIK is unknown."
+          ),
+        formType: z.enum(["10-K", "13F-HR"]).default("10-K"),
+        filingDate: z
+          .string()
+          .regex(/^\d{4}-\d{2}-\d{2}$/, "Use YYYY-MM-DD format")
+          .optional(),
+        filingYear: z
+          .number()
+          .int()
+          .min(1994)
+          .max(new Date().getFullYear() + 1)
+          .optional(),
+        includeSections: z
+          .array(
+            z.enum([
+              "business_overview",
+              "risk_factors",
+              "mdna",
+              "liquidity_and_market_risk",
+              "financial_statements",
+            ])
+          )
+          .optional(),
+        limitHoldings: z
+          .number()
+          .int()
+          .min(5)
+          .max(500)
+          .default(25)
+          .optional(),
+      })
+      .superRefine((data, ctx) => {
+        if (!data.ticker && !data.cik && !data.companyName) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "Provide at least a ticker, CIK, or company name.",
+          });
+        }
+        if (data.formType === "10-K" && data.limitHoldings !== undefined) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "limitHoldings only applies to 13F filings.",
+          });
+        }
+      }),
+    execute: async (
+      { ticker, cik, companyName, formType, filingDate, filingYear, includeSections, limitHoldings },
+      options
+    ) => {
+      try {
+        const summary = await fetchSecFilingSummary({
+          ticker: ticker?.trim().toUpperCase(),
+          cik: cik?.trim(),
+          companyName: companyName?.trim(),
+          formType,
+          filingDate,
+          filingYear,
+          includeSections,
+          limitHoldings,
+        });
+
+        await track("SEC Filing Pulled", {
+          formType,
+          ticker: summary.metadata.ticker || "",
+          cik: summary.metadata.cik,
+          cached: summary.metadata.cached,
+          sectionCount: Object.keys(summary.sections || {}).length,
+          holdingsCount: summary.holdings?.length || 0,
+        });
+
+        return summary;
+      } catch (error) {
+        console.error("[secFilings] Error:", error);
+        return {
+          error: true,
+          message: `❌ ${error instanceof Error ? error.message : "Unable to fetch SEC filing."}`,
+        };
+      }
+    },
+  }),
+
   codeExecution: tool({
     description: `Execute Python code securely in a Daytona Sandbox for financial modeling, data analysis, and calculations. CRITICAL: Always include print() statements to show results. Daytona can also capture rich artifacts (e.g., charts) when code renders images.
 
@@ -713,9 +817,9 @@ ${execution.result || "(No output produced)"}
   ...(isSelfHostedMode
     ? {
         secSearch: tool({
-          description: "Search SEC filings (10-K, 10-Q, 8-K, proxy statements). Use simple natural language with company name and filing type - no accession numbers or technical syntax needed.",
+          description: "Search SEC filings (10-K, 10-Q, 8-K, 13F, proxy statements, Form 4 insider transactions). Use simple natural language with company name/ticker and filing type.",
           inputSchema: z.object({
-            query: z.string().min(1).max(500).describe("Natural language query (e.g., 'Tesla 10-K risk factors', 'Apple executive compensation 2024')"),
+            query: z.string().min(1).max(500).describe("Natural language query (e.g., 'Tesla 10-K risk factors', 'Apple 13F institutional holdings', 'MSFT 8-K leadership changes')"),
           }),
           execute: async ({ query }) => {
             const startTime = Date.now();
@@ -724,7 +828,7 @@ ${execution.result || "(No output produced)"}
               const apiKey = process.env.VALYU_API_KEY;
               if (!apiKey) throw new Error('VALYU_API_KEY required');
 
-              // Try SEC filings proprietary source first
+              // Try Valyu SEC filings proprietary source first
               try {
                 const res = await fetch('https://api.valyu.ai/v1/deepsearch', {
                   method: 'POST',
@@ -734,41 +838,117 @@ ${execution.result || "(No output produced)"}
                 if (res.ok) {
                   const response = await res.json();
                   if (response?.results?.length) {
-                    console.log('[secSearch] Success:', { results: response.results.length, elapsed: `${Date.now() - startTime}ms` });
+                    console.log('[secSearch] Valyu success:', { results: response.results.length, elapsed: `${Date.now() - startTime}ms` });
                     await trackValyuCall('secSearch', query, response, false);
                     return response;
                   }
-                  console.warn('[secSearch] SEC source returned 0 results');
+                  console.warn('[secSearch] Valyu returned 0 results');
                 } else {
                   const errBody = await res.text().catch(() => '');
-                  console.warn('[secSearch] SEC source failed:', { status: res.status, body: errBody });
+                  console.warn('[secSearch] Valyu failed:', { status: res.status, body: errBody });
                 }
               } catch (secError) {
-                console.warn('[secSearch] SEC source error:', secError instanceof Error ? secError.message : secError);
+                console.warn('[secSearch] Valyu error:', secError instanceof Error ? secError.message : secError);
               }
 
-              // Fallback: use web search targeting SEC filing sites
-              console.log('[secSearch] Falling back to web search for SEC data');
-              const webRes = await fetch('https://api.valyu.ai/v1/deepsearch', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey },
-                body: JSON.stringify({
-                  query: `SEC filing ${query} site:sec.gov OR 10-K OR 10-Q OR 8-K`,
-                  search_type: 'all',
-                  max_num_results: 5,
-                }),
-              });
+              // Fallback: try EDGAR API directly for 10-K and 13F filings
+              console.log('[secSearch] Valyu failed, falling back to EDGAR API');
+              try {
+                // Detect form type from query
+                const queryLower = query.toLowerCase();
+                const is13F = queryLower.includes('13f') || queryLower.includes('13-f') || queryLower.includes('institutional') || queryLower.includes('holdings');
+                const formType: '10-K' | '13F-HR' = is13F ? '13F-HR' : '10-K';
 
-              if (webRes.ok) {
-                const webResponse = await webRes.json();
-                console.log('[secSearch] Web fallback:', { results: webResponse?.results?.length || 0, elapsed: `${Date.now() - startTime}ms` });
-                await trackValyuCall('secSearch', query, webResponse, false);
-                if (webResponse?.results?.length) {
-                  return webResponse;
+                // Extract ticker from query: match 1-5 uppercase letters that are NOT common non-ticker words
+                // Filter out form-type fragments like "HR", "K", "Q" and common words like "SEC", "OR", "AND"
+                const nonTickerWords = new Set(['HR', 'K', 'Q', 'SEC', 'OR', 'AND', 'THE', 'FOR', 'INC', 'CO', 'LTD', 'LLC', 'CORP', 'GROUP', 'FUND']);
+                const allUpperWords = query.match(/\b([A-Z]{1,5})\b/g) || [];
+                const candidateTickers = allUpperWords.filter(w => !nonTickerWords.has(w));
+                const ticker = candidateTickers.length > 0 ? candidateTickers[0] : null;
+
+                // Try to extract a year from the query
+                const yearMatch = query.match(/\b(20[0-2]\d)\b/);
+                const filingYear = yearMatch ? parseInt(yearMatch[1]) : undefined;
+
+                // Determine which sections to request for 10-K
+                const includeSections: Array<'business_overview' | 'risk_factors' | 'mdna' | 'liquidity_and_market_risk' | 'financial_statements'> | undefined =
+                  formType === '10-K'
+                    ? ['business_overview', 'risk_factors', 'mdna', 'liquidity_and_market_risk', 'financial_statements']
+                    : undefined;
+
+                if (ticker) {
+                  console.log('[secSearch] EDGAR fallback:', { ticker, formType, filingYear });
+
+                  const summary = await fetchSecFilingSummary({
+                    ticker,
+                    formType,
+                    filingYear,
+                    includeSections,
+                    limitHoldings: is13F ? 25 : undefined,
+                  });
+
+                  console.log('[secSearch] EDGAR success:', {
+                    company: summary.metadata.companyName,
+                    formType: summary.metadata.formType,
+                    filingDate: summary.metadata.filingDate,
+                    sections: Object.keys(summary.sections || {}),
+                    holdings: summary.holdings?.length || 0,
+                    cached: summary.metadata.cached,
+                    elapsed: `${Date.now() - startTime}ms`,
+                  });
+
+                  return summary;
+                } else {
+                  // No ticker found – try name-based lookup for entities like Vanguard, Bridgewater, etc.
+                  console.log('[secSearch] No ticker found, trying name-based EDGAR lookup');
+
+                  // Extract company name by stripping SEC/filing-related terms from the query
+                  const companyNameFromQuery = query
+                    .replace(/\b13F[-\s]?HR\b/gi, '')
+                    .replace(/\b10[-\s]?[KQ]\b/gi, '')
+                    .replace(/\b8[-\s]?K\b/gi, '')
+                    .replace(/\bForm\s+\d+\w*\b/gi, '')
+                    .replace(
+                      /\b(latest|filing|filings|quarter|ended|annual|report|risk\s*factors|holdings|institutional|insider|transactions?|ownership|SEC|EDGAR|search|show|get|find|fetch|pull|recent|date|me|the|of|for|and|or|in|with|from|their|what|are)\b/gi,
+                      ''
+                    )
+                    .replace(/\b20[0-2]\d\b/g, '')
+                    .replace(/\b\d{4}[-/]\d{2}[-/]\d{2}\b/g, '')
+                    .replace(/[^\w\s]/g, '')
+                    .replace(/\s+/g, ' ')
+                    .trim();
+
+                  if (companyNameFromQuery.length >= 3) {
+                    console.log('[secSearch] Extracted company name:', companyNameFromQuery);
+
+                    const summary = await fetchSecFilingSummary({
+                      companyName: companyNameFromQuery,
+                      formType,
+                      filingYear,
+                      includeSections,
+                      limitHoldings: is13F ? 25 : undefined,
+                    });
+
+                    console.log('[secSearch] EDGAR name-based success:', {
+                      company: summary.metadata.companyName,
+                      formType: summary.metadata.formType,
+                      filingDate: summary.metadata.filingDate,
+                      sections: Object.keys(summary.sections || {}),
+                      holdings: summary.holdings?.length || 0,
+                      cached: summary.metadata.cached,
+                      elapsed: `${Date.now() - startTime}ms`,
+                    });
+
+                    return summary;
+                  } else {
+                    console.warn('[secSearch] Could not extract company name from query for EDGAR fallback');
+                  }
                 }
+              } catch (edgarError) {
+                console.warn('[secSearch] EDGAR fallback error:', edgarError instanceof Error ? edgarError.message : edgarError);
               }
 
-              return `🔍 SEC filings search is currently experiencing issues. No results found for "${query}". Try webSearch or financeSearch as alternatives.`;
+              return `🔍 SEC filings search returned no results for "${query}". Try using the secFilings tool directly with a specific ticker and form type.`;
             } catch (error) {
               return formatSearchError(error, 'secSearch');
             }

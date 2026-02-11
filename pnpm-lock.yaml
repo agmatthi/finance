@@ -101,6 +101,9 @@ importers:
       embla-carousel-react:
         specifier: ^8.6.0
         version: 8.6.0(react@19.1.2)
+      fast-xml-parser:
+        specifier: ^5.3.4
+        version: 5.3.4
       framer-motion:
         specifier: ^12.23.12
         version: 12.23.12(react-dom@19.1.2(react@19.1.2))(react@19.1.2)
