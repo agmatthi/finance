@@ -173,14 +173,14 @@ function HomeContent() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-[#F5F5F5] dark:bg-gray-950">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+      <div className="flex items-center justify-center min-h-screen bg-background">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-foreground"></div>
       </div>
     );
   }
 
   return (
-    <div className='min-h-screen bg-[#F5F5F5] dark:bg-gray-950 flex overflow-x-hidden'>
+    <div className='min-h-screen bg-background flex overflow-x-hidden'>
       {/* Enterprise Banner */}
       <EnterpriseBanner />
 
@@ -230,7 +230,7 @@ function HomeContent() {
                 transition={{ duration: 0.6, ease: "easeOut" }}
               >
               <motion.h1 
-                className="text-3xl sm:text-5xl font-light text-gray-900 dark:text-gray-100 tracking-tight mb-4"
+                className="text-3xl sm:text-5xl font-light text-foreground tracking-tight mb-4"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1, duration: 0.6, ease: "easeOut" }}
@@ -238,7 +238,7 @@ function HomeContent() {
                 OpenTrade
               </motion.h1>
               <motion.p 
-                className="text-gray-500 dark:text-gray-400 text-xs sm:text-sm max-w-xs sm:max-w-md mx-auto px-4 sm:px-0"
+                className="text-muted-foreground text-xs sm:text-sm max-w-xs sm:max-w-md mx-auto px-4 sm:px-0"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2, duration: 0.6, ease: "easeOut" }}
@@ -295,8 +295,8 @@ function HomeContent() {
 export default function Home() {
   return (
     <Suspense fallback={
-      <div className="flex items-center justify-center min-h-screen bg-[#F5F5F5] dark:bg-gray-950">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 dark:border-gray-100"></div>
+      <div className="flex items-center justify-center min-h-screen bg-background">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-foreground"></div>
       </div>
     }>
       <HomeContent />

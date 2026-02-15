@@ -9,7 +9,6 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import Image from 'next/image';
 import { track } from '@vercel/analytics';
 
 interface AuthModalProps {
@@ -24,7 +23,6 @@ export function AuthModal({ open, onClose, onSignUpSuccess }: AuthModalProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Track when auth modal is shown
   useEffect(() => {
     if (open) {
       track('Auth Modal Shown', {
@@ -33,12 +31,11 @@ export function AuthModal({ open, onClose, onSignUpSuccess }: AuthModalProps) {
     }
   }, [open]);
 
-  const handleValyuSignIn = async () => {
+  const handleSignIn = async () => {
     setLoading(true);
     setError(null);
 
-    // Track sign in button click
-    track('Valyu Sign In Clicked', {
+    track('Sign In Clicked', {
       step: 'initiate',
     });
 
@@ -47,19 +44,15 @@ export function AuthModal({ open, onClose, onSignUpSuccess }: AuthModalProps) {
       if (error) {
         setError(error.message || 'Failed to initiate sign in');
         setLoading(false);
-        // Track sign in error
-        track('Valyu Sign In Error', {
+        track('Sign In Error', {
           step: 'initiate',
           error: error.message || 'Failed to initiate sign in',
         });
       }
-      // Don't close here as OAuth will redirect
-      // Don't set loading false here as user will be redirected
     } catch (err) {
       setError('An unexpected error occurred');
       setLoading(false);
-      // Track unexpected error
-      track('Valyu Sign In Error', {
+      track('Sign In Error', {
         step: 'initiate',
         error: 'unexpected_error',
       });
@@ -69,7 +62,6 @@ export function AuthModal({ open, onClose, onSignUpSuccess }: AuthModalProps) {
   const isLoading = loading || authLoading;
 
   const handleClose = () => {
-    // Track modal dismissed without signing in
     track('Auth Modal Dismissed', {
       had_error: !!error,
     });
@@ -81,24 +73,13 @@ export function AuthModal({ open, onClose, onSignUpSuccess }: AuthModalProps) {
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-[450px]">
         <DialogHeader>
-          <DialogTitle className="text-center text-xl">Sign in with Valyu</DialogTitle>
+          <DialogTitle className="text-center text-xl">Sign in to OpenTrade</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-5 py-4">
           <p className="text-center text-sm text-muted-foreground leading-relaxed">
-            Valyu is the information backbone of Finance, giving our AI engine access to real-time financial data across markets, SEC filings, and research.
+            Sign in to access real-time financial data across markets, SEC filings, and research.
           </p>
-
-          {/* Free Credits Badge */}
-          <div className="bg-green-500/10 border border-green-500/20 rounded-xl p-4">
-            <div className="flex items-center justify-center gap-2 mb-1">
-              <span className="text-xl">🎁</span>
-              <span className="text-green-600 dark:text-green-400 font-bold">$10 Free Credits</span>
-            </div>
-            <p className="text-center text-xs text-muted-foreground">
-              New accounts get $10 in free search credits. No credit card required.
-            </p>
-          </div>
 
           {error && (
             <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-3 text-center">
@@ -107,9 +88,9 @@ export function AuthModal({ open, onClose, onSignUpSuccess }: AuthModalProps) {
           )}
 
           <Button
-            onClick={handleValyuSignIn}
+            onClick={handleSignIn}
             disabled={isLoading}
-            className="w-full h-12 bg-black hover:bg-gray-800 text-white font-medium"
+            className="w-full h-12 bg-foreground hover:bg-foreground/80 text-background font-medium"
           >
             {isLoading ? (
               <span className="flex items-center gap-2">
@@ -120,16 +101,7 @@ export function AuthModal({ open, onClose, onSignUpSuccess }: AuthModalProps) {
                 Connecting...
               </span>
             ) : (
-              <span className="flex items-center justify-center gap-3">
-                <span>Sign in with</span>
-                <Image
-                  src="/valyu.svg"
-                  alt="Valyu"
-                  width={60}
-                  height={20}
-                  className="h-5 w-auto invert"
-                />
-              </span>
+              <span>Sign in</span>
             )}
           </Button>
 

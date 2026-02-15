@@ -110,7 +110,7 @@ export function MissingKeysDialog() {
             target="_blank"
             rel="noreferrer"
           >
-            <Button>Get Valyu Key</Button>
+            <Button>Get API Key</Button>
           </a>
         </div>
       </DialogContent>

@@ -87,7 +87,7 @@ import {
 import { parseFirstLine } from "@/lib/text-utils";
 import { motion, AnimatePresence } from "framer-motion";
 import DataSourceLogos from "./data-source-logos";
-import SocialLinks from "./social-links";
+
 import { calculateMessageMetrics, MessageMetrics } from "@/lib/metrics-calculator";
 import { MetricsPills } from "@/components/metrics-pills";
 import { PortfolioConnector } from "@/components/portfolio-connector";
@@ -2554,7 +2554,7 @@ export function ChatInterface({
       // Store the input to send
       const queryText = input.trim();
 
-      // In valyu mode, require Valyu sign-in to submit prompts
+      // In hosted mode, require sign-in to submit prompts
       if (!isSelfHosted && !user && !skipSignupPrompt) {
         setShowAuthModal(true);
         return; // Don't send message yet - require sign in
@@ -3058,10 +3058,14 @@ export function ChatInterface({
                         !canStop &&
                         (isLoading || !input.trim() || status === "error")
                       }
-                      className="absolute right-2.5 sm:right-3 top-1/2 -translate-y-1/2 rounded-xl h-7 w-7 sm:h-8 sm:w-8 p-0 bg-foreground hover:bg-foreground/80 text-background"
+                      className={`absolute right-2.5 sm:right-3 top-1/2 -translate-y-1/2 p-0 transition-all ${
+                        canStop
+                          ? "rounded-full h-9 w-9 sm:h-10 sm:w-10 bg-muted hover:bg-muted-foreground/10 border border-border text-muted-foreground"
+                          : "rounded-xl h-7 w-7 sm:h-8 sm:w-8 bg-foreground hover:bg-foreground/80 text-background"
+                      }`}
                     >
                       {canStop ? (
-                        <Square className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                        <Square className="h-4 w-4 sm:h-4.5 sm:w-4.5" fill="currentColor" />
                       ) : isLoading ? (
                         <Loader2 className="h-3.5 w-3.5 sm:h-4 sm:w-4 animate-spin" />
                       ) : (
@@ -3086,31 +3090,6 @@ export function ChatInterface({
                 </div>
               </form>
 
-              {/* Powered by Valyu */}
-              <motion.div
-                className="flex items-center justify-center mt-4"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 1.1, duration: 0.5 }}
-              >
-                <span className="text-xs text-muted-foreground/60">
-                  Powered by
-                </span>
-                <a
-                  href="https://platform.valyu.ai"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center hover:scale-105 transition-transform"
-                >
-                  <Image
-                    src="/valyu.svg"
-                    alt="Valyu"
-                    width={60}
-                    height={60}
-                    className="h-4 opacity-60 hover:opacity-100 transition-opacity cursor-pointer dark:invert"
-                  />
-                </a>
-              </motion.div>
             </div>
           </motion.div>
         )}
@@ -3850,19 +3829,18 @@ export function ChatInterface({
           <div className="flex items-center gap-2 text-destructive">
             <AlertCircle className="h-4 w-4" />
             <span className="font-medium">
-              {error.message?.includes('CREDITS_REQUIRED') ? 'Valyu Credits Required' : 'Something went wrong'}
+              {error.message?.includes('CREDITS_REQUIRED') ? 'Credits Required' : 'Something went wrong'}
             </span>
           </div>
           <p className="text-destructive/80 text-sm mt-1">
             {error.message?.includes('CREDITS_REQUIRED')
-              ? 'You need Valyu credits in your organization to use this feature. Add credits at platform.valyu.ai.'
+              ? 'You need credits to use this feature. Please add credits to continue.'
               : 'Please check your connection and try again.'
             }
           </p>
           <Button
             onClick={() => {
               if (error.message?.includes('CREDITS_REQUIRED')) {
-                // Redirect to Valyu Platform for credits
                 window.open('https://platform.valyu.ai', '_blank');
               } else {
                 window.location.reload();
@@ -3929,10 +3907,14 @@ export function ChatInterface({
                       !canStop &&
                       (isLoading || !input.trim() || status === "error")
                     }
-                    className="absolute right-2 top-1/2 -translate-y-1/2 rounded-xl h-8 w-8 p-0 bg-foreground hover:bg-foreground/80 text-background shadow-sm transition-colors"
+                    className={`absolute right-2 top-1/2 -translate-y-1/2 p-0 shadow-sm transition-all ${
+                      canStop
+                        ? "rounded-full h-10 w-10 bg-muted hover:bg-muted-foreground/10 border border-border text-muted-foreground"
+                        : "rounded-xl h-8 w-8 bg-foreground hover:bg-foreground/80 text-background"
+                    }`}
                   >
                       {canStop ? (
-                        <Square className="h-4 w-4" />
+                        <Square className="h-4.5 w-4.5" fill="currentColor" />
                       ) : isLoading ? (
                         <Loader2 className="h-4 w-4 animate-spin" />
                       ) : (
@@ -3957,49 +3939,39 @@ export function ChatInterface({
               </div>
               </form>
 
-            {/* Mobile Bottom Bar - Social links and disclaimer below input */}
+            {/* Mobile Bottom Bar - Disclaimer below input */}
             <motion.div
-              className="block sm:hidden mt-4 pt-3 border-t border-border"
+              className="block sm:hidden mt-3"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.5, duration: 0.3 }}
             >
-              <div className="flex flex-col items-center space-y-3">
-                <div className="flex items-center justify-center space-x-4">
-                  <SocialLinks />
-                </div>
-                <p className="text-[10px] text-muted-foreground/60 text-center">
-                  Not financial advice.
-                </p>
-              </div>
+              <p className="text-[10px] text-muted-foreground/60 text-center">
+                Not financial advice.
+              </p>
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Auth Modal for Sign in with Valyu */}
+      {/* Auth Modal */}
       <AuthModal
         open={showAuthModal}
         onClose={() => setShowAuthModal(false)}
       />
 
-      {/* Sign in Required Dialog - shown when user tries to submit without Valyu auth */}
+      {/* Sign in Required Dialog */}
       <Dialog open={showSignupPrompt} onOpenChange={setShowSignupPrompt}>
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle className="text-lg font-semibold text-foreground">
-              Sign in with Valyu to continue
+              Sign in to continue
             </DialogTitle>
             <DialogDescription className="text-sm text-muted-foreground mt-2">
-              Valyu is the AI search engine powering Finance. Sign in to access comprehensive financial data from SEC filings, earnings reports, market data, and 50+ premium sources.
+              Sign in to access comprehensive financial data from SEC filings, earnings reports, market data, and 50+ premium sources.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 mt-6">
-            <div className="p-3 bg-primary/10 border border-primary/30 rounded-lg">
-              <p className="text-sm text-primary font-medium">
-                Get $10 free credits on signup - no credit card required!
-              </p>
-            </div>
             <button
               onClick={() => {
                 setShowSignupPrompt(false);
@@ -4007,8 +3979,7 @@ export function ChatInterface({
               }}
               className="w-full px-4 py-3 bg-foreground text-background font-medium rounded-lg hover:bg-foreground/80 transition-all flex items-center justify-center gap-2"
             >
-              <Image src="/valyu.svg" alt="Valyu" width={20} height={20} className="h-5 w-auto" />
-              Sign in with Valyu
+              Sign in
             </button>
           </div>
         </DialogContent>

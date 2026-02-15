@@ -58,7 +58,7 @@ export function SignupPrompt({ open, onClose, onSignUp, messageCount }: SignupPr
 
                 {/* Subtitle */}
                 <p className="text-center text-gray-600 dark:text-gray-400 mb-6">
-                  You&apos;ve asked {messageCount} question{messageCount !== 1 ? 's' : ''}. Sign up to unlock the full potential of Finance by Valyu.
+                  You&apos;ve asked {messageCount} question{messageCount !== 1 ? 's' : ''}. Sign up to unlock the full potential of OpenTrade.
                 </p>
 
                 {/* Features */}
