@@ -2887,14 +2887,14 @@ export function ChatInterface({
                   </h3>
                 </motion.div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3 px-4 sm:px-0">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3 px-4 sm:px-0">
                   <motion.button
                     onClick={() =>
                       handlePromptClick(
                         "Give me the top trade ideas right now. What are the highest-conviction stock picks from top Wall Street analysts this week? Include price targets, upside potential, and analyst ratings."
                       )
                     }
-                    className="bg-muted/50 p-2.5 sm:p-4 rounded-xl border border-border hover:border-muted-foreground/30 transition-colors hover:bg-muted text-left group"
+                    className="bg-muted/50 p-3 sm:p-4 rounded-2xl border border-border hover:border-muted-foreground/30 transition-all hover:bg-muted hover:shadow-sm text-left group"
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.3, duration: 0.5 }}
@@ -2914,7 +2914,7 @@ export function ChatInterface({
                         "Show me the most unusual options activity today. Find large block trades, unusual volume spikes, and significant call/put imbalances. Flag any options flow that suggests smart money is making big bets."
                       )
                     }
-                    className="bg-muted/50 p-2.5 sm:p-4 rounded-xl border border-border hover:border-muted-foreground/30 transition-colors hover:bg-muted text-left group"
+                    className="bg-muted/50 p-3 sm:p-4 rounded-2xl border border-border hover:border-muted-foreground/30 transition-all hover:bg-muted hover:shadow-sm text-left group"
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.4, duration: 0.5 }}
@@ -2934,7 +2934,7 @@ export function ChatInterface({
                         "What are the biggest market movers today? Show me the top gainers and losers, what's driving the moves, and any breaking news or catalysts behind the price action."
                       )
                     }
-                    className="bg-muted/50 p-2.5 sm:p-4 rounded-xl border border-border hover:border-muted-foreground/30 transition-colors hover:bg-muted text-left group"
+                    className="bg-muted/50 p-3 sm:p-4 rounded-2xl border border-border hover:border-muted-foreground/30 transition-all hover:bg-muted hover:shadow-sm text-left group"
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.5, duration: 0.5 }}
@@ -2954,7 +2954,7 @@ export function ChatInterface({
                         "Find the top insider trading activity this week. Show me the largest insider buys and sells, who's buying their own stock, and any notable patterns. Include dollar amounts, position sizes, and whether insiders are accumulating or dumping shares."
                       )
                     }
-                    className="bg-muted/50 p-2.5 sm:p-4 rounded-xl border border-border hover:border-muted-foreground/30 transition-colors hover:bg-muted text-left group"
+                    className="bg-muted/50 p-3 sm:p-4 rounded-2xl border border-border hover:border-muted-foreground/30 transition-all hover:bg-muted hover:shadow-sm text-left group"
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.6, duration: 0.5 }}
@@ -2974,7 +2974,7 @@ export function ChatInterface({
                         "What are the best ETFs to buy right now? Compare the top-performing ETFs by sector, show me their holdings overlap, expense ratios, and recent fund flows. Which sectors are seeing the most inflows?"
                       )
                     }
-                    className="bg-muted/50 p-2.5 sm:p-4 rounded-xl border border-border hover:border-muted-foreground/30 transition-colors hover:bg-muted text-left group"
+                    className="bg-muted/50 p-3 sm:p-4 rounded-2xl border border-border hover:border-muted-foreground/30 transition-all hover:bg-muted hover:shadow-sm text-left group"
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.7, duration: 0.5 }}
@@ -2994,16 +2994,16 @@ export function ChatInterface({
                         "Show me the largest companies by market cap and analyze which mega-caps are undervalued right now. Compare their P/E ratios, revenue growth, and free cash flow yields. Build a ranking of the best value opportunities among the top 20 largest stocks."
                       )
                     }
-                    className="bg-gradient-to-r from-primary/10 to-accent/30 p-2.5 sm:p-4 rounded-xl border border-primary/30 hover:border-primary/50 transition-colors hover:from-primary/20 hover:to-accent/40 text-left group col-span-1 sm:col-span-2 lg:col-span-1"
+                    className="bg-muted/80 p-3 sm:p-4 rounded-2xl border border-border hover:border-muted-foreground/30 transition-all hover:bg-muted hover:shadow-sm text-left group"
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.8, duration: 0.5 }}
                     whileTap={{ scale: 0.98 }}
                   >
-                    <div className="text-primary mb-1.5 sm:mb-2 text-xs sm:text-sm font-medium group-hover:text-primary/80">
+                    <div className="text-foreground/80 mb-1.5 sm:mb-2 text-xs sm:text-sm font-medium group-hover:text-foreground">
                       Mega-Cap Value Scan
                     </div>
-                    <div className="text-[10px] sm:text-xs text-primary/70">
+                    <div className="text-[10px] sm:text-xs text-muted-foreground">
                       Find undervalued giants among the largest stocks
                     </div>
                   </motion.button>
@@ -3034,7 +3034,7 @@ export function ChatInterface({
               )}
 
               <form onSubmit={handleSubmit} className="max-w-3xl mx-auto">
-                <div className="bg-card rounded-2xl border border-border shadow-sm overflow-hidden">
+                <div className="bg-card rounded-3xl border border-border shadow-sm overflow-hidden">
                   <div className="relative flex items-end px-3 sm:px-4 py-2.5 sm:py-3">
                     <Textarea
                       value={input}
@@ -3883,7 +3883,7 @@ export function ChatInterface({
             )}
 
             <form onSubmit={handleSubmit} className="max-w-3xl mx-auto">
-              <div className="bg-card rounded-2xl shadow-sm border border-border overflow-hidden">
+              <div className="bg-card rounded-3xl shadow-sm border border-border overflow-hidden">
                 <div className="px-4 py-2.5 relative flex items-center">
                   <Textarea
                     value={input}

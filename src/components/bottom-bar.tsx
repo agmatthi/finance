@@ -12,7 +12,7 @@ const BottomBar = () => {
         animate={{ opacity: 1, x: 0 }}
         transition={{ delay: 1, duration: 0.5, ease: "easeOut" }}
       >
-        <p className="text-[10px] sm:text-xs text-gray-400 dark:text-gray-500">
+        <p className="text-[10px] sm:text-xs text-muted-foreground/60">
           Not financial advice.
         </p>
       </motion.div>
