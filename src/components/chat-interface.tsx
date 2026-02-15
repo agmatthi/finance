@@ -90,6 +90,7 @@ import DataSourceLogos from "./data-source-logos";
 import SocialLinks from "./social-links";
 import { calculateMessageMetrics, MessageMetrics } from "@/lib/metrics-calculator";
 import { MetricsPills } from "@/components/metrics-pills";
+import { PortfolioConnector } from "@/components/portfolio-connector";
 
 // Professional Finance UI - Workflow-inspired with checkmarks and clean cards
 const TimelineStep = memo(({
@@ -2890,7 +2891,7 @@ export function ChatInterface({
                   <motion.button
                     onClick={() =>
                       handlePromptClick(
-                        "Build a Monte Carlo simulation to predict Tesla's stock price in 6 months. Use Python to fetch historical data, calculate volatility and drift, run 10,000 simulations, and visualize the probability distribution with confidence intervals."
+                        "Give me the top trade ideas right now. What are the highest-conviction stock picks from top Wall Street analysts this week? Include price targets, upside potential, and analyst ratings."
                       )
                     }
                     className="bg-muted/50 p-2.5 sm:p-4 rounded-xl border border-border hover:border-muted-foreground/30 transition-colors hover:bg-muted text-left group"
@@ -2900,17 +2901,17 @@ export function ChatInterface({
                     whileTap={{ scale: 0.98 }}
                   >
                     <div className="text-foreground/80 mb-1.5 sm:mb-2 text-xs sm:text-sm font-medium group-hover:text-foreground">
-                      🐍 ML Models
+                      Top Trade Ideas
                     </div>
                     <div className="text-[10px] sm:text-xs text-muted-foreground">
-                      Advanced Python modeling & simulations
+                      Highest-conviction analyst picks right now
                     </div>
                   </motion.button>
 
                   <motion.button
                     onClick={() =>
                       handlePromptClick(
-                        "Analyze GameStop's latest 10-K filing. Extract key financial metrics, identify risk factors, and compare revenue streams vs last year. Show me insider trading activity and institutional ownership changes."
+                        "Show me the most unusual options activity today. Find large block trades, unusual volume spikes, and significant call/put imbalances. Flag any options flow that suggests smart money is making big bets."
                       )
                     }
                     className="bg-muted/50 p-2.5 sm:p-4 rounded-xl border border-border hover:border-muted-foreground/30 transition-colors hover:bg-muted text-left group"
@@ -2920,17 +2921,17 @@ export function ChatInterface({
                     whileTap={{ scale: 0.98 }}
                   >
                     <div className="text-foreground/80 mb-1.5 sm:mb-2 text-xs sm:text-sm font-medium group-hover:text-foreground">
-                      📊 SEC Filings
+                      Unusual Options Activity
                     </div>
                     <div className="text-[10px] sm:text-xs text-muted-foreground">
-                      Deep dive into regulatory filings & insider data
+                      Spot smart money moves & big bets
                     </div>
                   </motion.button>
 
                   <motion.button
                     onClick={() =>
                       handlePromptClick(
-                        "Analyze the correlation between Bitcoin price movements and major tech stocks (TSLA, COIN, NVDA) over the past year. Create a CSV with daily prices, then generate correlation matrices and time series charts showing their relationships. Include analysis of crypto market sentiment and its impact on tech valuations."
+                        "What are the biggest market movers today? Show me the top gainers and losers, what's driving the moves, and any breaking news or catalysts behind the price action."
                       )
                     }
                     className="bg-muted/50 p-2.5 sm:p-4 rounded-xl border border-border hover:border-muted-foreground/30 transition-colors hover:bg-muted text-left group"
@@ -2940,17 +2941,17 @@ export function ChatInterface({
                     whileTap={{ scale: 0.98 }}
                   >
                     <div className="text-foreground/80 mb-1.5 sm:mb-2 text-xs sm:text-sm font-medium group-hover:text-foreground">
-                      🔗 Correlation Analysis
+                      Market Movers
                     </div>
                     <div className="text-[10px] sm:text-xs text-muted-foreground">
-                      Market relationships & statistical insights
+                      Today&apos;s top gainers, losers & catalysts
                     </div>
                   </motion.button>
 
                   <motion.button
                     onClick={() =>
                       handlePromptClick(
-                        "Analyze Netflix's subscriber growth and revenue metrics over the past 5 years. Pull financial data from SEC filings, create a comprehensive CSV with quarterly metrics (subscribers, ARPU, revenue, content spend), then generate charts showing: 1) Subscriber growth trends by region, 2) Revenue vs content spending, 3) Stock price correlation with subscriber announcements. Include competitive analysis vs Disney+."
+                        "Find the top insider trading activity this week. Show me the largest insider buys and sells, who's buying their own stock, and any notable patterns. Include dollar amounts, position sizes, and whether insiders are accumulating or dumping shares."
                       )
                     }
                     className="bg-muted/50 p-2.5 sm:p-4 rounded-xl border border-border hover:border-muted-foreground/30 transition-colors hover:bg-muted text-left group"
@@ -2960,17 +2961,17 @@ export function ChatInterface({
                     whileTap={{ scale: 0.98 }}
                   >
                     <div className="text-foreground/80 mb-1.5 sm:mb-2 text-xs sm:text-sm font-medium group-hover:text-foreground">
-                      📊 Growth Metrics
+                      Top Insider Trades
                     </div>
                     <div className="text-[10px] sm:text-xs text-muted-foreground">
-                      Business KPIs with trend visualizations
+                      Follow the money from company insiders
                     </div>
                   </motion.button>
 
                   <motion.button
                     onClick={() =>
                       handlePromptClick(
-                        "Compare the top 5 tech stocks (AAPL, MSFT, GOOGL, AMZN, NVDA) over the past 5 years. Create a CSV with their annual revenue, profit margins, and P/E ratios. Then generate visualizations showing: 1) Stock price performance comparison chart, 2) Revenue growth trends, 3) Profitability metrics comparison. Provide detailed analysis of which performed best and why."
+                        "What are the best ETFs to buy right now? Compare the top-performing ETFs by sector, show me their holdings overlap, expense ratios, and recent fund flows. Which sectors are seeing the most inflows?"
                       )
                     }
                     className="bg-muted/50 p-2.5 sm:p-4 rounded-xl border border-border hover:border-muted-foreground/30 transition-colors hover:bg-muted text-left group"
@@ -2980,17 +2981,17 @@ export function ChatInterface({
                     whileTap={{ scale: 0.98 }}
                   >
                     <div className="text-foreground/80 mb-1.5 sm:mb-2 text-xs sm:text-sm font-medium group-hover:text-foreground">
-                      📈 Comparative Analysis
+                      Top ETFs
                     </div>
                     <div className="text-[10px] sm:text-xs text-muted-foreground">
-                      Multi-stock comparison with charts & data
+                      Best-performing funds & sector flows
                     </div>
                   </motion.button>
 
                   <motion.button
                     onClick={() =>
                       handlePromptClick(
-                        "Do an in-depth report into the effect COVID-19 had on Pfizer. Analyze insider trades made during that time period, research those specific high-profile people involved, look at the company's stock price pre and post COVID, with income statements, balance sheets, and any relevant info from SEC filings around this time. Be thorough and execute code for deep analysis. Create a comprehensive CSV of ALL insider trades with columns: Date, Insider Name, Title/Position, Transaction Type (Buy/Sale/Option), Transaction Size (shares), Dollar Value, Stock Price at Time, and News Events Around Transaction Date."
+                        "Show me the largest companies by market cap and analyze which mega-caps are undervalued right now. Compare their P/E ratios, revenue growth, and free cash flow yields. Build a ranking of the best value opportunities among the top 20 largest stocks."
                       )
                     }
                     className="bg-gradient-to-r from-primary/10 to-accent/30 p-2.5 sm:p-4 rounded-xl border border-primary/30 hover:border-primary/50 transition-colors hover:from-primary/20 hover:to-accent/40 text-left group col-span-1 sm:col-span-2 lg:col-span-1"
@@ -3000,10 +3001,10 @@ export function ChatInterface({
                     whileTap={{ scale: 0.98 }}
                   >
                     <div className="text-primary mb-1.5 sm:mb-2 text-xs sm:text-sm font-medium group-hover:text-primary/80">
-                      🚀 Deep Investigation
+                      Mega-Cap Value Scan
                     </div>
                     <div className="text-[10px] sm:text-xs text-primary/70">
-                      Multi-source research + Insider data + Financial analysis
+                      Find undervalued giants among the largest stocks
                     </div>
                   </motion.button>
                 </div>
@@ -3033,51 +3034,55 @@ export function ChatInterface({
               )}
 
               <form onSubmit={handleSubmit} className="max-w-3xl mx-auto">
-                <div className="relative flex items-end">
-                  <Textarea
-                    value={input}
-                    onChange={handleInputChange}
-                    placeholder="Ask a question..."
-                    className="w-full resize-none rounded-2xl px-3 sm:px-4 py-2.5 sm:py-3 pr-14 sm:pr-16 min-h-[38px] sm:min-h-[40px] max-h-28 sm:max-h-32 overflow-y-auto text-sm sm:text-base bg-card border border-border focus:border-muted-foreground/40 focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0 shadow-sm"
-                    disabled={status === "error" || isLoading}
-                    rows={1}
-                    style={{ lineHeight: "1.5" }}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" && !e.shiftKey) {
-                        e.preventDefault();
-                        handleSubmit(e);
+                <div className="bg-card rounded-2xl border border-border shadow-sm overflow-hidden">
+                  <div className="relative flex items-end px-3 sm:px-4 py-2.5 sm:py-3">
+                    <Textarea
+                      value={input}
+                      onChange={handleInputChange}
+                      placeholder="Ask a question..."
+                      className="w-full resize-none px-0 py-0 pr-10 sm:pr-12 min-h-[24px] sm:min-h-[28px] max-h-28 sm:max-h-32 overflow-y-auto text-sm sm:text-base bg-transparent border-0 focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0 shadow-none"
+                      disabled={status === "error" || isLoading}
+                      rows={1}
+                      style={{ lineHeight: "1.5" }}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" && !e.shiftKey) {
+                          e.preventDefault();
+                          handleSubmit(e);
+                        }
+                      }}
+                    />
+                    <Button
+                      type={canStop ? "button" : "submit"}
+                      onClick={canStop ? handleStop : undefined}
+                      disabled={
+                        !canStop &&
+                        (isLoading || !input.trim() || status === "error")
                       }
-                    }}
-                  />
-                  <Button
-                    type={canStop ? "button" : "submit"}
-                    onClick={canStop ? handleStop : undefined}
-                    disabled={
-                      !canStop &&
-                      (isLoading || !input.trim() || status === "error")
-                    }
-                    className="absolute right-1.5 sm:right-2 top-1/2 -translate-y-1/2 rounded-xl h-7 w-7 sm:h-8 sm:w-8 p-0 bg-foreground hover:bg-foreground/80 text-background"
-                  >
-                    {canStop ? (
-                      <Square className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                    ) : isLoading ? (
-                      <Loader2 className="h-3.5 w-3.5 sm:h-4 sm:w-4 animate-spin" />
-                    ) : (
-                      <svg
-                        className="h-3.5 w-3.5 sm:h-4 sm:w-4"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M5 12l14 0m-7-7l7 7-7 7"
-                        />
-                      </svg>
-                    )}
-                  </Button>
+                      className="absolute right-2.5 sm:right-3 top-1/2 -translate-y-1/2 rounded-xl h-7 w-7 sm:h-8 sm:w-8 p-0 bg-foreground hover:bg-foreground/80 text-background"
+                    >
+                      {canStop ? (
+                        <Square className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                      ) : isLoading ? (
+                        <Loader2 className="h-3.5 w-3.5 sm:h-4 sm:w-4 animate-spin" />
+                      ) : (
+                        <svg
+                          className="h-3.5 w-3.5 sm:h-4 sm:w-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M5 12l14 0m-7-7l7 7-7 7"
+                          />
+                        </svg>
+                      )}
+                    </Button>
+                  </div>
+                  {/* Portfolio Connector - inside the card */}
+                  <PortfolioConnector />
                 </div>
               </form>
 
@@ -3900,52 +3905,56 @@ export function ChatInterface({
             )}
 
             <form onSubmit={handleSubmit} className="max-w-3xl mx-auto">
-              <div className="bg-card rounded-2xl shadow-sm border border-border px-4 py-2.5 relative flex items-center">
-                <Textarea
-                  value={input}
-                  onChange={handleInputChange}
-                  placeholder="Ask a question..."
-                  className="w-full resize-none border-0 px-0 py-2 pr-12 min-h-[36px] max-h-24 focus:ring-0 focus-visible:ring-0 bg-transparent overflow-y-auto text-base placeholder:text-muted-foreground shadow-none"
-                  disabled={status === "error" || isLoading}
-                  rows={1}
-                  style={{ lineHeight: "1.5", paddingTop: "0.5rem", paddingBottom: "0.5rem" }}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && !e.shiftKey) {
-                      e.preventDefault();
-                      handleSubmit(e);
+              <div className="bg-card rounded-2xl shadow-sm border border-border overflow-hidden">
+                <div className="px-4 py-2.5 relative flex items-center">
+                  <Textarea
+                    value={input}
+                    onChange={handleInputChange}
+                    placeholder="Ask a question..."
+                    className="w-full resize-none border-0 px-0 py-2 pr-12 min-h-[36px] max-h-24 focus:ring-0 focus-visible:ring-0 bg-transparent overflow-y-auto text-base placeholder:text-muted-foreground shadow-none"
+                    disabled={status === "error" || isLoading}
+                    rows={1}
+                    style={{ lineHeight: "1.5", paddingTop: "0.5rem", paddingBottom: "0.5rem" }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && !e.shiftKey) {
+                        e.preventDefault();
+                        handleSubmit(e);
+                      }
+                    }}
+                  />
+                  <Button
+                    type={canStop ? "button" : "submit"}
+                    onClick={canStop ? handleStop : undefined}
+                    disabled={
+                      !canStop &&
+                      (isLoading || !input.trim() || status === "error")
                     }
-                  }}
-                />
-                <Button
-                  type={canStop ? "button" : "submit"}
-                  onClick={canStop ? handleStop : undefined}
-                  disabled={
-                    !canStop &&
-                    (isLoading || !input.trim() || status === "error")
-                  }
-                  className="absolute right-2 top-1/2 -translate-y-1/2 rounded-xl h-8 w-8 p-0 bg-foreground hover:bg-foreground/80 text-background shadow-sm transition-colors"
-                >
-                    {canStop ? (
-                      <Square className="h-4 w-4" />
-                    ) : isLoading ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <svg
-                        className="h-4 w-4"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M5 12l14 0m-7-7l7 7-7 7"
-                        />
-                      </svg>
-                    )}
-                  </Button>
+                    className="absolute right-2 top-1/2 -translate-y-1/2 rounded-xl h-8 w-8 p-0 bg-foreground hover:bg-foreground/80 text-background shadow-sm transition-colors"
+                  >
+                      {canStop ? (
+                        <Square className="h-4 w-4" />
+                      ) : isLoading ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <svg
+                          className="h-4 w-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M5 12l14 0m-7-7l7 7-7 7"
+                          />
+                        </svg>
+                      )}
+                    </Button>
                 </div>
+                {/* Portfolio Connector - inside the card */}
+                <PortfolioConnector />
+              </div>
               </form>
 
             {/* Mobile Bottom Bar - Social links and disclaimer below input */}

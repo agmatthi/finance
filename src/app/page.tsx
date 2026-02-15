@@ -4,10 +4,7 @@ import { ChatInterface } from '@/components/chat-interface';
 import { useState, useEffect, useCallback, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import BottomBar from '@/components/bottom-bar';
-import Image from 'next/image';
-import { track } from '@vercel/analytics';
 import { createClient } from '@/utils/supabase/client';
-import { Button } from '@/components/ui/button';
 import {
   CheckCircle,
   AlertCircle,
@@ -26,9 +23,6 @@ function HomeContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [hasMessages, setHasMessages] = useState(false);
-  const [isHoveringTitle, setIsHoveringTitle] = useState(false);
-  const [autoTiltTriggered, setAutoTiltTriggered] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
   
   // Get chatId from URL params
   const chatIdParam = searchParams.get('chatId');
@@ -142,54 +136,6 @@ function HomeContent() {
     }
   }, [searchParams, router, notification, user]);
 
-  // Detect mobile device for touch interactions
-  useEffect(() => {
-    const checkMobile = () => {
-      const isMobileDevice = window.innerWidth <= 768 || 
-        /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-      setIsMobile(isMobileDevice);
-    };
-    
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
-
-  // Handle title click on mobile
-  const handleTitleClick = useCallback(() => {
-    if (isMobile) {
-      track('Title Click', {
-        trigger: 'mobile_touch'
-      });
-      setIsHoveringTitle(true);
-      // Keep it tilted for 3 seconds then close
-      setTimeout(() => {
-        setIsHoveringTitle(false);
-      }, 3000);
-    }
-  }, [isMobile]);
-
-  
-  // Auto-trigger tilt animation after 2 seconds
-  useEffect(() => {
-    if (!hasMessages && !autoTiltTriggered) {
-      const timer = setTimeout(() => {
-        track('Title Hover', {
-          trigger: 'auto_tilt'
-        });
-        setIsHoveringTitle(true);
-        setAutoTiltTriggered(true);
-        
-        // Keep it tilted for 2 seconds then close
-        setTimeout(() => {
-          setIsHoveringTitle(false);
-        }, 2000);
-      }, 2000);
-      
-      return () => clearTimeout(timer);
-    }
-  }, [hasMessages, autoTiltTriggered]);
 
   const updateUrlWithSession = useCallback((sessionId: string | null) => {
     const url = new URL(window.location.href);
@@ -283,87 +229,21 @@ function HomeContent() {
                 exit={{ opacity: 0, y: -20, transition: { duration: 0.3 } }}
                 transition={{ duration: 0.6, ease: "easeOut" }}
               >
-              <motion.div 
-                className="relative mb-10 inline-block"
+              <motion.h1 
+                className="text-3xl sm:text-5xl font-light text-gray-900 dark:text-gray-100 tracking-tight mb-4"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1, duration: 0.6, ease: "easeOut" }}
-                onHoverStart={() => {
-                  if (!isMobile) {
-                    track('Title Hover', {
-                      trigger: 'user_hover'
-                    });
-                    setIsHoveringTitle(true);
-                  }
-                }}
-                onHoverEnd={() => {
-                  if (!isMobile) {
-                    setIsHoveringTitle(false);
-                  }
-                }}
-                onClick={handleTitleClick}
               >
-                <motion.h1 
-                  className={`text-3xl sm:text-5xl font-light text-gray-900 dark:text-gray-100 tracking-tight relative z-10 ${
-                    isMobile ? 'cursor-pointer' : 'cursor-default'
-                  }`}
-                  style={{ transformOrigin: '15% 100%' }}
-                  animate={{ 
-                    rotateZ: isHoveringTitle ? -8 : 0,
-                  }}
-                  transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
-                >
-                  Finance
-                </motion.h1>
-                
-                {/* "By Valyu" that slides out from under */}
-                <motion.div 
-                  className="absolute -bottom-6 left-0 right-0 flex items-center justify-center gap-1"
-                  initial={{ opacity: 0 }}
-                  animate={{ 
-                    opacity: isHoveringTitle ? 1 : 0,
-                    y: isHoveringTitle ? 0 : -10,
-                  }}
-                  transition={{ 
-                    opacity: { delay: isHoveringTitle ? 0.15 : 0, duration: 0.2 },
-                    y: { delay: isHoveringTitle ? 0.1 : 0, duration: 0.3, ease: [0.23, 1, 0.32, 1] }
-                  }}
-                >
-                  <span className="text-sm text-gray-500 dark:text-gray-400 font-light">By</span>
-                  <Image 
-                    src="/valyu.svg" 
-                    alt="Valyu" 
-                    width={60}
-                    height={60}
-                    className="h-5 opacity-80 dark:invert"
-                  />
-                </motion.div>
-                
-                {/* Mobile tap hint */}
-                {isMobile && !isHoveringTitle && !hasMessages && (
-                  <motion.div
-                    className="absolute -bottom-8 left-0 right-0 flex items-center justify-center"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ delay: 3, duration: 0.5 }}
-                  >
-                    <span className="text-xs text-gray-400 dark:text-gray-500">
-                      Tap to reveal
-                    </span>
-                  </motion.div>
-                )}
-
-                {/* Hover area extender */}
-                <div className="absolute inset-0 -bottom-10" />
-              </motion.div>
+                OpenTrade
+              </motion.h1>
               <motion.p 
                 className="text-gray-500 dark:text-gray-400 text-xs sm:text-sm max-w-xs sm:max-w-md mx-auto px-4 sm:px-0"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2, duration: 0.6, ease: "easeOut" }}
               >
-                Powered by Valyu&apos;s enterprise-grade search infrastructure for real-time financial analysis
+                AI-powered trading research &amp; portfolio intelligence
               </motion.p>
             </motion.div>
           )}

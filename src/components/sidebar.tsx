@@ -3,7 +3,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import Image from 'next/image';
+
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '@/lib/stores/use-auth-store';
 import { createClient } from '@/utils/supabase/client-wrapper';
@@ -277,14 +277,7 @@ export function Sidebar({
 
           {/* Center: Logo */}
           <button onClick={handleLogoClick} className="flex items-center gap-2">
-            <Image
-              src="/nabla.png"
-              alt="Finance"
-              width={24}
-              height={24}
-              className="rounded-md"
-            />
-            <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">Finance</span>
+            <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">OpenTrade</span>
           </button>
 
           {/* Right: User avatar or login */}
@@ -342,14 +335,7 @@ export function Sidebar({
                   {/* Drawer Header */}
                   <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-800">
                     <div className="flex items-center gap-3">
-                      <Image
-                        src="/nabla.png"
-                        alt="Finance"
-                        width={28}
-                        height={28}
-                        className="rounded-lg"
-                      />
-                      <span className="font-semibold text-gray-900 dark:text-gray-100">Finance</span>
+                      <span className="font-semibold text-gray-900 dark:text-gray-100">OpenTrade</span>
                     </div>
                     <button
                       onClick={() => setShowMobileDrawer(false)}
@@ -571,13 +557,7 @@ export function Sidebar({
                   onClick={handleLogoClick}
                   className="w-12 h-12 flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-800 rounded-[20px] transition-all duration-200 hover:scale-110 active:scale-95"
                 >
-                  <Image
-                    src="/nabla.png"
-                    alt="Home"
-                    width={28}
-                    height={28}
-                    className="rounded-lg"
-                  />
+                  <span className="text-sm font-bold text-gray-900 dark:text-gray-100">OT</span>
                 </button>
                 <div className="absolute left-full ml-3 top-1/2 -translate-y-1/2 px-3 py-1.5 bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 text-sm font-medium rounded-lg opacity-0 group-hover/tooltip:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50">
                   Home

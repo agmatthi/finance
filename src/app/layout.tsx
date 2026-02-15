@@ -26,11 +26,11 @@ export const metadata: Metadata = {
     process.env.NEXT_PUBLIC_APP_URL || "https://finance.valyu.ai"
   ),
   title: {
-    default: "Finance AI Agent - Deep Research & Analysis | Valyu",
-    template: "%s | Finance AI Agent | Valyu",
+    default: "OpenTrade - AI Trading Research & Portfolio Intelligence",
+    template: "%s | OpenTrade",
   },
   description:
-    "AI-powered financial research agent with real-time market data, SEC filings, and institutional-grade analysis. Deep research for stocks, companies, and markets through natural language.",
+    "AI-powered trading research and portfolio intelligence. Real-time market data, SEC filings, unusual options activity, and institutional-grade analysis through natural language.",
   keywords: [
     "AI finance",
     "finance AI agent",
@@ -43,7 +43,7 @@ export const metadata: Metadata = {
     "investment research",
     "Bloomberg alternative",
   ],
-  applicationName: "Finance by Valyu",
+  applicationName: "OpenTrade",
   authors: [{ name: "Valyu", url: "https://valyu.ai" }],
   creator: "Valyu",
   publisher: "Valyu",
@@ -59,17 +59,17 @@ export const metadata: Metadata = {
     },
   },
   openGraph: {
-    title: "Finance AI Agent - Deep Research & Analysis | Valyu",
+    title: "OpenTrade - AI Trading Research & Portfolio Intelligence",
     description:
-      "AI-powered financial research with real-time market data, SEC filings, and institutional-grade analysis. Natural language queries for stocks, companies, and markets.",
+      "AI-powered trading research and portfolio intelligence. Real-time market data, SEC filings, and institutional-grade analysis through natural language.",
     url: "/",
-    siteName: "Finance by Valyu",
+    siteName: "OpenTrade",
     images: [
       {
         url: "/valyu.png",
         width: 1200,
         height: 630,
-        alt: "Finance AI Agent - Deep Financial Research",
+        alt: "OpenTrade - AI Trading Research & Portfolio Intelligence",
       },
     ],
     locale: "en_US",
@@ -77,9 +77,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Finance AI Agent - Deep Research | Valyu",
+    title: "OpenTrade - AI Trading Research & Portfolio Intelligence",
     description:
-      "AI-powered financial research agent. Real-time market data, SEC filings, and institutional-grade analysis through natural language.",
+      "AI-powered trading research and portfolio intelligence. Real-time market data, SEC filings, and institutional-grade analysis through natural language.",
     images: ["/valyu.png"],
     creator: "@valaborator",
   },
@@ -105,7 +105,7 @@ export const metadata: Metadata = {
 const jsonLd = {
   "@context": "https://schema.org",
   "@type": "SoftwareApplication",
-  name: "Finance by Valyu",
+  name: "OpenTrade",
   description:
     "AI-powered financial research agent with real-time market data, SEC filings, and institutional-grade analysis through natural language.",
   url: "https://finance.valyu.ai",
